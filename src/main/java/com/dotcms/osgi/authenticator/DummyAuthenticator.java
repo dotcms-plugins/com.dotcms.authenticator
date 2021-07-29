@@ -64,7 +64,7 @@ public class DummyAuthenticator implements Authenticator {
 
         Logger.info(this, "Creating the user: " + emailAddress);
         APILocator.getUserAPI().save(dotUser, APILocator.systemUser(), false);
-        // safe roles
+        // save roles
         Stream.of(myUserOpt.get().get("roles").split(StringPool.COMMA))
                 .forEach(role -> Try.run(()->this.addRole(dotUser, role.trim()))
                         .onFailure(e -> Logger.error(this, "Error adding role: " + role, e)));
