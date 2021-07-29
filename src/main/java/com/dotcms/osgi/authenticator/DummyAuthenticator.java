@@ -21,40 +21,28 @@ public class DummyAuthenticator implements Authenticator {
     private final DummyUserAPI dummyUserAPI = new DummyUserAPI();
 
     @Override
-    public int authenticateByEmailAddress(final String companyId, final String emailAddress, final String password) throws AuthException {
+    public int authenticateByEmailAddress(final String companyId, final String emailAddress,
+                                          final String password) throws AuthException {
 
-        Logger.info(this, "DummyAuthenticator: authenticateByEmailAddress = " + emailAddress );
-        final Optional<Map<String, String>> myUserOpt = dummyUserAPI.findUserByEmail(emailAddress);
+        try {
 
-        User dotUser = null;
-        if (myUserOpt.isPresent() && myUserOpt.get().get("password").equals(password)) {
+            Logger.info(this, "DummyAuthenticator: authenticateByEmailAddress = " + emailAddress );
+            final Optional<Map<String, String>> myUserOpt = dummyUserAPI.findUserByEmail(emailAddress);
 
-            try {
+            // if the user exists on the external API and the password match
+            if (myUserOpt.isPresent() && myUserOpt.get().get("password").equals(password)) {
 
-                dotUser = APILocator.getUserAPI().loadByUserByEmail(emailAddress, APILocator.systemUser(), false);
-            } catch (NoSuchUserException e) {
+                if (null == Try.of(()->APILocator.getUserAPI()
+                        .loadByUserByEmail(emailAddress, APILocator.systemUser(), false)).getOrNull()) {
 
-                Logger.info(this, "User not found: " + emailAddress);
-                dotUser = null;
-            } catch (DotSecurityException | DotDataException e) {
-
-                Logger.info(this, "Could not get log in the user: " + emailAddress);
-                return FAILURE;
-            }
-
-            // if the user does not exists, so create it
-            if (null == dotUser) {
-                try {
-
-                    saveUser(emailAddress, myUserOpt);
-                } catch (DotDataException | DotSecurityException e) {
-
-                    Logger.info(this, "Could not sync the user: " + emailAddress);
-                    return FAILURE;
+                    saveUser(emailAddress, myUserOpt); // if the user does not exists, so create it
                 }
-            }
 
-            return SUCCESS;
+                return SUCCESS;
+            }
+        } catch (DotSecurityException | DotDataException e) {
+
+            Logger.info(this, "Could not authenticate the user: " + emailAddress);
         }
 
         return FAILURE;
