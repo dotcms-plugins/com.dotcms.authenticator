@@ -15,6 +15,7 @@ import io.vavr.control.Try;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class DummyAuthenticator implements Authenticator {
 
@@ -63,12 +64,10 @@ public class DummyAuthenticator implements Authenticator {
 
         Logger.info(this, "Creating the user: " + emailAddress);
         APILocator.getUserAPI().save(dotUser, APILocator.systemUser(), false);
-
-        for (final String role : myUserOpt.get().get("roles").split(StringPool.COMMA)) {
-
-            Try.run(()->this.addRole(dotUser, role.trim()))
-                    .onFailure(e -> Logger.error(this, "Error adding role: " + role, e));
-        }
+        // safe roles
+        Stream.of(myUserOpt.get().get("roles").split(StringPool.COMMA))
+                .forEach(role -> Try.run(()->this.addRole(dotUser, role.trim()))
+                        .onFailure(e -> Logger.error(this, "Error adding role: " + role, e)));
     }
 
     private void addRole(final User user, final String roleKey)

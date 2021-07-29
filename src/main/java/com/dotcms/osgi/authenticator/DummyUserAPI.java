@@ -7,13 +7,13 @@ import java.util.Optional;
 // this one will be the thirdparty user resolver
 public class DummyUserAPI {
 
-    private static final String EMAIL = "dotcms.dummy@dotcms.com";
+    private static final String EMAIL = "dotcms.dummy2@dotcms.com";
     public Optional<Map<String, String>> findUserByEmail (final String emailAddress) {
 
         if (EMAIL.equals(emailAddress)) {
 
             final Map<String, String> userMap = new HashMap<>();
-            userMap.put("userId", "dummy.12345");
+            userMap.put("userId", "dummy.123456");
             userMap.put("password", "dotcms123");
             userMap.put("emailAddress", EMAIL);
             userMap.put("lastName", "Dummy User");
